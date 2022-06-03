@@ -142,6 +142,8 @@ async function trySwap(){
         // alert(JSON.stringify(receipt1)); 
         let trade = currentTrade.from.address;
         let token = "";
+        // amount for each transaction = enter amount / fund size
+        // e.g. 25 USDC = 100 USDC / 4 ( FAON )
         alert("Please confirm " + fund.size + " transactions using your metamask wallet.");
         fund.forEach (async function(value, key) {
             var receipt = await doSwap1(trade, address, amount/fund.size, value);
