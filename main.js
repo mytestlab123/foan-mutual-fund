@@ -141,18 +141,6 @@ async function trySwap(){
     try {
         // alert(JSON.stringify(receipt1)); 
         let trade = currentTrade.from.address;
-        // let receipt1 = await doSwap1(trade,address, amount/4, "0xb85517b87bf64942adf3a0b9e4c71e4bc5caa4e5");
-        // alert('FTM,0xb85517b87bf64942adf3a0b9e4c71e4bc5caa4e5');
-
-        // let receipt2 = await doSwap1(trade, address, amount/4, "0x80c0cbdb8d0b190238795d376f0bd57fd40525f2");
-        // alert('ONE,0x80c0cbdb8d0b190238795d376f0bd57fd40525f2');
-
-        // let receipt3 = await doSwap1(trade, address, amount/4, "0xac51C4c48Dc3116487eD4BC16542e27B5694Da1b");
-        // alert('ATOM,0xac51C4c48Dc3116487eD4BC16542e27B5694Da1b');
-
-        // let receipt4 = await doSwap1(trade, address, amount/4, "0x72bd80445b0db58ebe3e8db056529d4c5faf6f2f");
-        // alert("NEAR,0x72bd80445b0db58ebe3e8db056529d4c5faf6f2f");
-
         let token = "";
         alert("Please confirm " + fund.size + " transactions using your metamask wallet.");
         fund.forEach (async function(value, key) {
