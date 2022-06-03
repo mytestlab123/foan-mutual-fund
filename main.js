@@ -4,6 +4,18 @@ Moralis.serverURL = "https://prylzpawi05g.usemoralis.com:2053/server"
 let currentTrade = {};
 let currentSelectSide;
 let tokens;
+let myObj;
+let MATIC = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+let USDC  = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
+let USDT  = '0xc2132d05d31c914a87c6611c10748aeb04b58e8f'
+let DAI   = '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'
+
+const fund = new Map([
+    ['FTM','0xb85517b87bf64942adf3a0b9e4c71e4bc5caa4e5'],
+    ['ONE','0x80c0cbdb8d0b190238795d376f0bd57fd40525f2'],
+    ['ATOM','0xac51C4c48Dc3116487eD4BC16542e27B5694Da1b'],
+    ['NEAR','0x72bd80445b0db58ebe3e8db056529d4c5faf6f2f'],
+  ]);
 
 async function init(){
     await Moralis.initPlugins();
@@ -23,25 +35,33 @@ async function listAvailableTokens(){
     tokens = result.tokens;
     let parent = document.getElementById("token_list");
     for( const address in tokens){
-        let token = tokens[address];
-        let div = document.createElement("div");
-        div.setAttribute("data-address", address)
-        div.className = "token_row";
-        let html = `
-        <img class="token_list_img" src="${token.logoURI}">
-        <span class="token_list_text">${token.symbol}</span>
-        `
-        div.innerHTML = html;
-        div.onclick = (() => {selectToken(address)});
-        parent.appendChild(div);
+        if (address == MATIC || address == USDC || address == USDT || address == DAI) {
+            let token = tokens[address];
+            console.log ("Successful ✅");
+            // console.log (address);
+            let div = document.createElement("div");
+            div.setAttribute("data-address", address)
+            div.className = "token_row";
+            let html = `
+            <img class="token_list_img" src="${token.logoURI}">
+            <span class="token_list_text">${token.symbol}</span>
+            `
+            div.innerHTML = html;
+            div.onclick = (() => {selectToken(address)});
+            parent.appendChild(div);
+        }
     }
 }
 
 function selectToken(address){
     closeModal();
-    console.log(tokens);
+    document.getElementById("test").innerHTML = JSON.stringify(tokens[address]);
+    // console.log(tokens);
     currentTrade[currentSelectSide] = tokens[address];
-    console.log(currentTrade);
+    myObj = {"currentTrade": currentTrade};
+    console.log(myObj);
+    // console.log(currentTrade[currentSelectSide]);
+    // console.log("currentTrade:" currentTrade);
     renderInterface();
     getQuote();
 }
@@ -119,29 +139,18 @@ async function trySwap(){
         }
     }
     try {
-        // let receipt = await doSwap(address, amount);
-        // ONE,0x80c0cbdb8d0b190238795d376f0bd57fd40525f2
-        let receipt1 = await doSwap1(address, amount, "0x80c0cbdb8d0b190238795d376f0bd57fd40525f2");
-        // alert(JSON.stringify(receipt1));
-        alert('ONE');
-        console.log(JSON.stringify(receipt1));
-        // FTM,0xb85517b87bf64942adf3a0b9e4c71e4bc5caa4e5
-        let receipt2 = await doSwap1(address, amount, "0xb85517b87bf64942adf3a0b9e4c71e4bc5caa4e5");
-        alert('FTM');
-        console.log(JSON.stringify(receipt2));
-        // ATOM,0xac51C4c48Dc3116487eD4BC16542e27B5694Da1b
-        let receipt3 = await doSwap1(address, amount, "0xac51C4c48Dc3116487eD4BC16542e27B5694Da1b");
-        alert('ATOM');
-        console.log(JSON.stringify(receipt3));
-        // METIS,0xA863246658DEA34111C3C1DceDb2cfd5d6067334
-        let receipt4 = await doSwap1(address, amount, "0xA863246658DEA34111C3C1DceDb2cfd5d6067334");
-        console.log(JSON.stringify(receipt4));
-        alert("METIS");
-        // SAND,0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683
-        let receipt5 = await doSwap1(address, amount, "0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683");
-        alert("SAND");
-        console.log(JSON.stringify(receipt5));
-        alert("Investment is completed.");
+        // alert(JSON.stringify(receipt1)); 
+        let trade = currentTrade.from.address;
+        let token = "";
+        // amount for each transaction = enter amount / fund size
+        // e.g. 25 USDC = 100 USDC / 4 ( FAON )
+        alert("Please confirm " + fund.size + " transactions using your metamask wallet.");
+        fund.forEach (async function(value, key) {
+            var receipt = await doSwap1(trade, address, amount/fund.size, value);
+            token += key + ' = ' + value + "<br />";
+        })
+        document.getElementById("result").innerHTML = token
+        alert("Investment / transaction started verify using Polygon Scan: https://polygonscan.com/tokentxns?a=" + address );
     
     } catch (error) {
         console.log(error);
@@ -149,10 +158,10 @@ async function trySwap(){
 
 }
 
-async function doSwap1(userAddress, amount, toaddress){
+async function doSwap1(trade, userAddress, amount, toaddress){
     return Moralis.Plugins.oneInch.swap({
         chain: 'polygon', // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE", // The token you want to swap
+        fromTokenAddress: trade, // The token you want to swap
         toTokenAddress: toaddress, // The token you want to receive
         amount: amount,
         fromAddress: userAddress, // Your wallet address
@@ -160,16 +169,6 @@ async function doSwap1(userAddress, amount, toaddress){
       });
 }
 
-// function doSwap(userAddress, amount){
-//     return Moralis.Plugins.oneInch.swap({
-//         chain: 'polygon', // The blockchain you want to use (eth/bsc/polygon)
-//         fromTokenAddress: currentTrade.from.address, // The token you want to swap
-//         toTokenAddress: currentTrade.to.address, // The token you want to receive
-//         amount: amount,
-//         fromAddress: userAddress, // Your wallet address
-//         slippage: 1,
-//       });
-// }
 async function logOut() {
     await Moralis.User.logOut();
     console.log("logged out");
@@ -177,8 +176,8 @@ async function logOut() {
 
 init();
 
-// document.getElementById("modal_close").onclick = closeModal;
-// document.getElementById("from_token_select").onclick = (() => {openModal("from")});
+document.getElementById("modal_close").onclick = closeModal;
+document.getElementById("from_token_select").onclick = (() => {openModal("from")});
 // document.getElementById("to_token_select").onclick = (() => {openModal("to")});
 document.getElementById("login_button").onclick = login;
 // document.getElementById("from_amount").onblur = getQuote;
